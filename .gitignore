@@ -1,0 +1,25 @@
+.claude
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+*.xcuserdata
+*.xcscmblueprint
+
+# Build
+.build/
+build/
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Secrets
+GoogleService-Info.plist
+.env
+
+# SPM
+.swiftpm/
+Package.resolved
