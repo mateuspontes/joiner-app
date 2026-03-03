@@ -1,0 +1,93 @@
+import Foundation
+import Combine
+import AppKit
+
+@Observable
+final class MenuBarViewModel {
+    var appState: AppState
+    var sections: [EventSection] = []
+    var nextUpEvent: CalendarEvent?
+
+    private var refreshTimer: AnyCancellable?
+
+    init(appState: AppState) {
+        self.appState = appState
+    }
+
+    func startRefreshing() {
+        refresh()
+        refreshTimer = Timer.publish(every: 30, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.refresh()
+            }
+    }
+
+    func stopRefreshing() {
+        refreshTimer?.cancel()
+    }
+
+    func refresh() {
+        let now = Date()
+        let events = appState.todayEvents.filter { !$0.isAllDay }
+
+        // Update next up
+        let threshold = now.addingTimeInterval(Double(Constants.nextUpThresholdMinutes) * 60)
+        nextUpEvent = events.first { event in
+            event.startDate > now && event.startDate <= threshold && event.meetingLink != nil
+        }
+
+        // Also include ongoing event with meeting link if no upcoming
+        if nextUpEvent == nil {
+            nextUpEvent = events.first { event in
+                event.isOngoing && event.meetingLink != nil
+            }
+        }
+
+        // Build sections from remaining events
+        let remainingEvents = events.filter { $0.id != nextUpEvent?.id }
+        sections = buildSections(from: remainingEvents)
+    }
+
+    func joinMeeting(_ event: CalendarEvent) {
+        guard let link = event.meetingLink else { return }
+        NSWorkspace.shared.open(link.url)
+    }
+
+    func copyLink(_ event: CalendarEvent) {
+        guard let link = event.meetingLink else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(link.url.absoluteString, forType: .string)
+    }
+
+    // MARK: - Conflict Grouping
+
+    private func buildSections(from events: [CalendarEvent]) -> [EventSection] {
+        let sorted = events.sorted { $0.startDate < $1.startDate }
+        var result: [EventSection] = []
+        var i = 0
+
+        while i < sorted.count {
+            let current = sorted[i]
+            var conflicting = [current]
+            var maxEnd = current.endDate
+            var j = i + 1
+
+            while j < sorted.count && sorted[j].startDate < maxEnd {
+                conflicting.append(sorted[j])
+                maxEnd = max(maxEnd, sorted[j].endDate)
+                j += 1
+            }
+
+            if conflicting.count > 1 {
+                result.append(.conflict(ConflictGroup(events: conflicting)))
+            } else {
+                result.append(.single(current))
+            }
+
+            i = j
+        }
+
+        return result
+    }
+}
