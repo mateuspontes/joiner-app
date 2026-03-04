@@ -51,9 +51,9 @@ final class MenuBarViewModel {
             }
         }
 
-        // Build sections from remaining events (only those with meeting links)
-        let remainingEvents = events.filter { $0.id != nextUpEvent?.id && $0.meetingLink != nil }
-        sections = buildSections(from: remainingEvents)
+        // Build sections from all events (only those with meeting links)
+        let listedEvents = events.filter { $0.meetingLink != nil }
+        sections = buildSections(from: listedEvents)
     }
 
     func joinMeeting(_ event: CalendarEvent) {
@@ -69,11 +69,19 @@ final class MenuBarViewModel {
 
     func dismissEvent(_ event: CalendarEvent) {
         DismissedEventsStore.dismiss(event.id)
+        NotificationService.shared.removeScheduled(for: event.id)
+        MeetingStartService.shared.removeScheduled(for: event.id)
         refresh()
     }
 
     func restoreAllDismissed() {
         DismissedEventsStore.restoreAll()
+        NotificationService.shared.removeAllScheduled()
+        MeetingStartService.shared.removeAllScheduled()
+        for event in appState.todayEvents {
+            NotificationService.shared.scheduleNotifications(for: event)
+            MeetingStartService.shared.scheduleOpen(for: event)
+        }
         refresh()
     }
 

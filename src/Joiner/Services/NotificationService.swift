@@ -70,6 +70,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
 
+    func removeScheduled(for eventId: String) {
+        let ids = ["\(eventId)-pre"]
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+    }
+
     private func scheduleNotification(
         id: String,
         title: String,

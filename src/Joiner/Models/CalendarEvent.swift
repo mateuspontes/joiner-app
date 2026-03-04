@@ -22,6 +22,10 @@ struct CalendarEvent: Identifiable, Hashable {
         startDate <= Date()
     }
 
+    var isPast: Bool {
+        endDate <= Date()
+    }
+
     var timeRange: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"

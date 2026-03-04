@@ -27,6 +27,7 @@ struct EventRowView: View {
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
+            .opacity(event.isPast ? 0.8 : 1)
 
             Spacer()
 
@@ -53,7 +54,9 @@ struct EventRowView: View {
 
                     platformIcon(link.platform)
 
-                    JoinButton(compact: true, action: onJoin)
+                    if !event.isPast {
+                        JoinButton(compact: true, action: onJoin)
+                    }
                 }
             }
         }
