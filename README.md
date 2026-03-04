@@ -1,11 +1,12 @@
 # Joiner
 
-macOS menu bar app that shows your upcoming Google Calendar meetings with one-click join links for Google Meet, Zoom, Microsoft Teams and Slack Huddle.
+macOS menu bar app that shows your upcoming meetings with one-click join links for Google Meet, Zoom, Microsoft Teams and Slack Huddle. Reads directly from the macOS Calendar app — no Google account or API keys required.
 
 ## Features
 
-- Multi-account Google Calendar support
+- Reads from macOS Calendar (supports iCloud, Google, Exchange, CalDAV and any calendar synced to Calendar.app)
 - Automatic meeting link detection (Meet, Zoom, Teams, Slack)
+- Toggle individual calendars on/off in Preferences
 - Conflict grouping for overlapping events
 - "Next Up" card for imminent meetings (< 15 min)
 - Dynamic countdown in the menu bar (e.g. `12m`)
@@ -17,7 +18,7 @@ macOS menu bar app that shows your upcoming Google Calendar meetings with one-cl
 
 - macOS 14.0 (Sonoma) or later
 - Xcode 16+ (for development)
-- Google Cloud project with Calendar API enabled (see setup below)
+- Calendar access permission (prompted on first launch)
 
 ---
 
@@ -29,79 +30,35 @@ macOS menu bar app that shows your upcoming Google Calendar meetings with one-cl
 brew install xcodegen   # already handled by `make setup`
 ```
 
-### 2. Google Cloud Setup
-
-Before building, you need a Google Cloud OAuth Client ID.
-
-**Step-by-step:**
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com) and create a new project named **Joiner**
-
-2. Enable the **Google Calendar API**:
-   - APIs & Services → Library → search "Google Calendar API" → Enable
-
-3. Configure the **OAuth Consent Screen**:
-   - APIs & Services → OAuth Consent Screen
-   - User Type: **External**
-   - App name: `Joiner`
-   - User support email: your email
-   - App logo: optional (helps with verification)
-   - Authorized domains: leave empty for desktop apps
-   - Developer contact email: your email
-   - Scopes: click "Add or remove scopes" → add:
-     - `https://www.googleapis.com/auth/calendar.readonly`
-   - Test users (for Testing mode): add your Gmail addresses
-
-4. Create **OAuth Client ID**:
-   - APIs & Services → Credentials → Create Credentials → OAuth Client ID
-   - Application type: **macOS** (or "Desktop app")
-   - Name: `Joiner macOS`
-   - Download the JSON — you'll need the **Client ID**
-
-5. Configure the app:
-   - Open `src/Joiner/Utilities/Constants.swift`
-   - Replace `YOUR_CLIENT_ID` with your actual Client ID (the part before `.apps.googleusercontent.com`)
-   - Open `src/Joiner/Resources/Info.plist`
-   - Replace both occurrences of `YOUR_CLIENT_ID` with the same value
-
-### 3. Build and run
+### 2. Build and run
 
 ```bash
 make run    # generates project, builds, and launches
 make test   # runs unit tests
 ```
 
+On first launch the app will request **Calendar access** via the standard macOS permission dialog. Grant access to see your events.
+
 ---
 
 ## Distribution
 
-### For personal use / small group (≤ 100 users)
+Joiner uses EventKit (macOS system framework) to read calendar data. No external API keys or OAuth credentials are needed.
 
-Keep the OAuth app in **Testing** mode and add users via the Google Cloud Console:
-- APIs & Services → OAuth Consent Screen → Test users → Add users
+To distribute the app outside the Mac App Store you need:
 
-No Google review required. Works immediately.
+1. **Apple Developer account** — for code signing and notarization
+2. **Privacy Policy** — host `PRIVACY_POLICY.md` at a public URL (e.g. GitHub Pages)
+3. Run the full deployment pipeline:
 
-### For public distribution (any Google account)
+```bash
+export CODE_SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
+export APPLE_ID="your@apple.id"
+export TEAM_ID="YOUR_TEAM_ID"
+export APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"  # from appleid.apple.com
 
-You need to publish the OAuth app. Google will review it.
-
-**What to prepare:**
-
-1. **Privacy Policy** — host the `PRIVACY_POLICY.md` at a public URL, e.g.:
-   - GitHub Pages: `https://yourusername.github.io/joiner/privacy`
-   - Or any static hosting
-
-2. **Submit for verification** in Google Cloud Console:
-   - OAuth Consent Screen → Publish App → Submit for Verification
-   - Fill in:
-     - Privacy Policy URL (required)
-     - Justification for `calendar.readonly`: *"Joiner reads calendar events to display upcoming meetings and extract video conference links. No data is stored on external servers — all data remains on the user's device."*
-     - Demo video (optional but speeds up review): 2-3 min screen recording showing the sign-in flow and calendar display
-
-3. **Wait for review** — usually 3–7 business days for apps requesting only `calendar.readonly`
-
-> **Note:** While in "Unverified" status (before passing review), users will see a warning screen but can still proceed by clicking "Advanced → Go to Joiner (unsafe)". For personal use this is fine. For wide distribution, complete verification first.
+make deploy   # archive → sign → notarize → DMG
+```
 
 ---
 
@@ -121,15 +78,6 @@ You need to publish the OAuth app. Google will review it.
 | `make deploy` | Full pipeline: archive → sign → notarize → DMG |
 | `make clean` | Remove build artifacts |
 
-### Environment variables for `make deploy`
-
-```bash
-export CODE_SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
-export APPLE_ID="your@apple.id"
-export TEAM_ID="YOUR_TEAM_ID"
-export APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"  # from appleid.apple.com
-```
-
 ---
 
 ## Architecture
@@ -137,25 +85,24 @@ export APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"  # from appleid.apple.com
 ```
 src/Joiner/
 ├── App/                    # Entry point, AppDelegate (NSStatusItem)
-├── Models/                 # CalendarEvent, CalendarAccount, MeetingLink
+├── Models/                 # CalendarEvent, MeetingLink
 ├── Services/
-│   ├── Auth/               # GoogleAuthService, KeychainService, TokenManager
-│   ├── Calendar/           # GoogleCalendarAPIClient, CalendarSyncService, EventParser
+│   ├── Calendar/           # EventKitService, CalendarSyncService, EventParser
 │   ├── MeetingLinkDetector # Regex for Meet/Zoom/Teams/Slack
 │   ├── NotificationService # UNUserNotificationCenter
-│   └── SyncScheduler       # Periodic 15-min background sync
+│   └── SyncScheduler       # Push-based sync + 5-min polling fallback
 ├── ViewModels/             # MenuBarViewModel, StatusItemViewModel, etc.
 ├── Views/
 │   ├── MenuBar/            # PopoverContentView, StatusItemView
 │   ├── Popover/            # NextUpCard, EventRow, ConflictGroup, JoinButton
-│   ├── Preferences/        # Accounts, Calendars, Appearance tabs
-│   └── Components/         # AccountDot, CountdownBadge, VibrancyBackground
-└── Utilities/              # Constants, DateFormatters
+│   ├── Preferences/        # Calendars, Appearance tabs
+│   └── Components/         # CountdownBadge, VibrancyBackground
+└── Utilities/              # Constants, DateFormatters, DismissedEventsStore
 ```
 
 **Key decisions:**
 - `NSStatusItem` + `NSPopover` (not SwiftUI `MenuBarExtra`) for full control over dynamic icon
 - `@Observable` + SwiftUI — macOS 14+ only
-- Google Calendar REST API via `URLSession` — no heavy SDK, just Bearer token
-- `Security.framework` Keychain for token storage
+- **EventKit** reads from the system Calendar store — supports all calendar providers without extra credentials
+- Push-based sync via `EKEventStoreChanged` notification + 5-min polling fallback
 - `UNUserNotificationCenter` for native notifications
