@@ -7,6 +7,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
 
     private let joinActionId = Constants.joinActionIdentifier
     private let categoryId = Constants.meetingCategoryIdentifier
+    private var didPromptForSettings = false
 
     func configure() {
         let center = UNUserNotificationCenter.current()
@@ -15,6 +16,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error {
                 print("Notification authorization error: \(error)")
+            }
+            if !granted {
+                self.promptForNotificationSettingsIfNeeded()
             }
         }
 
@@ -36,10 +40,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     func scheduleNotifications(for event: CalendarEvent) {
         guard event.meetingLink != nil else { return }
         guard !event.isAllDay else { return }
+
+        promptForNotificationSettingsIfNeeded()
         
         // Use user preferences
         let prefs = UserDefaults.standard
-        let enableSound = prefs.object(forKey: "enableSound") as? Bool ?? true
         let enableNotifications = prefs.object(forKey: "enablePreNotification") as? Bool ?? true // Rename for clarity if needed
         let preMinutes = prefs.object(forKey: "preNotificationMinutes") as? Int ?? 5
 
@@ -57,19 +62,6 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                 meetingURL: event.meetingLink?.url.absoluteString,
                 date: preNotificationDate,
                 withSound: false // Spec: no sound for pre-notification
-            )
-        }
-
-        // At-time notification
-        // Schedule if in the future or within the last 5 seconds (to handle sync race conditions)
-        if event.startDate > now.addingTimeInterval(-5) {
-            scheduleNotification(
-                id: "\(event.id)-start",
-                title: "Meeting starting now",
-                body: event.title,
-                meetingURL: event.meetingLink?.url.absoluteString,
-                date: event.startDate,
-                withSound: enableSound
             )
         }
     }
@@ -141,6 +133,29 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             completionHandler([.banner, .sound])
         } else {
             completionHandler([.banner])
+        }
+    }
+
+    private func promptForNotificationSettingsIfNeeded() {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            guard settings.authorizationStatus == .denied else { return }
+            DispatchQueue.main.async {
+                guard !self.didPromptForSettings else { return }
+                self.didPromptForSettings = true
+
+                let alert = NSAlert()
+                alert.messageText = "Notifications are disabled"
+                alert.informativeText = "Enable Joiner notifications in System Settings to receive meeting reminders."
+                alert.addButton(withTitle: "Open System Settings")
+                alert.addButton(withTitle: "Not now")
+
+                let response = alert.runModal()
+                if response == .alertFirstButtonReturn,
+                   let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
         }
     }
 }

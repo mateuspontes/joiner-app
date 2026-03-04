@@ -31,6 +31,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesViewModel.onCalendarVisibilityChanged = { [weak self] in
             self?.syncScheduler.syncNow()
         }
+        preferencesViewModel.onNotificationPreferencesChanged = { [weak self] in
+            self?.syncScheduler.syncNow()
+        }
 
         // React to system calendar changes
         eventKitService.onCalendarChanged = { [weak self] in
@@ -39,6 +42,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Configure notifications
         NotificationService.shared.configure()
+        MeetingStartService.shared.onMeetingStart = { [weak self] _ in
+            self?.showPopover()
+        }
 
         // Setup UI
         setupStatusItem()
@@ -64,6 +70,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         eventKitService.stopMonitoring()
         statusItemViewModel.stopMonitoring()
         menuBarViewModel?.stopRefreshing()
+        MeetingStartService.shared.removeAllScheduled()
     }
 
     // MARK: - Status Item
@@ -141,10 +148,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            menuBarViewModel.refresh()
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            NSApp.activate(ignoringOtherApps: true)
+            showPopover()
         }
+    }
+
+    private func showPopover() {
+        guard let button = statusItem.button else { return }
+
+        menuBarViewModel.refresh()
+
+        if !popover.isShown {
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        }
+
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     // MARK: - Preferences

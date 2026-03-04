@@ -10,6 +10,8 @@ struct AppearanceTabView: View {
 
                 Toggle("Play sound at meeting time", isOn: $viewModel.enableSound)
 
+                Toggle("Open Joiner at meeting time", isOn: $viewModel.enableOpenAtMeetingTime)
+
                 Picker("Pre-notification", selection: $viewModel.preNotificationMinutes) {
                     Text("1 minute before").tag(1)
                     Text("3 minutes before").tag(3)
@@ -37,5 +39,6 @@ struct AppearanceTabView: View {
         .onChange(of: viewModel.enableCountdown) { _, _ in viewModel.savePreferences() }
         .onChange(of: viewModel.enablePreNotification) { _, _ in viewModel.savePreferences() }
         .onChange(of: viewModel.preNotificationMinutes) { _, _ in viewModel.savePreferences() }
+        .onChange(of: viewModel.enableOpenAtMeetingTime) { _, _ in viewModel.savePreferences() }
     }
 }

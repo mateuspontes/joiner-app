@@ -43,8 +43,10 @@ final class SyncScheduler {
 
         // Reschedule notifications
         NotificationService.shared.removeAllScheduled()
+        MeetingStartService.shared.removeAllScheduled()
         for event in events {
             NotificationService.shared.scheduleNotifications(for: event)
+            MeetingStartService.shared.scheduleOpen(for: event)
         }
     }
 }

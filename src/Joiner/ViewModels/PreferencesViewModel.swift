@@ -18,10 +18,12 @@ final class PreferencesViewModel {
     var enableCountdown = true
     var enablePreNotification = true
     var preNotificationMinutes = 5
+    var enableOpenAtMeetingTime = true
     var launchAtLogin = false
 
     var calendars: [CalendarInfo] = []
     var onCalendarVisibilityChanged: (() -> Void)?
+    var onNotificationPreferencesChanged: (() -> Void)?
 
     init(eventKitService: EventKitService) {
         self.eventKitService = eventKitService
@@ -102,6 +104,7 @@ final class PreferencesViewModel {
         enableCountdown = UserDefaults.standard.object(forKey: "enableCountdown") as? Bool ?? true
         enablePreNotification = UserDefaults.standard.object(forKey: "enablePreNotification") as? Bool ?? true
         preNotificationMinutes = UserDefaults.standard.object(forKey: "preNotificationMinutes") as? Int ?? 5
+        enableOpenAtMeetingTime = UserDefaults.standard.object(forKey: "enableOpenAtMeetingTime") as? Bool ?? true
     }
 
     func savePreferences() {
@@ -109,6 +112,8 @@ final class PreferencesViewModel {
         UserDefaults.standard.set(enableCountdown, forKey: "enableCountdown")
         UserDefaults.standard.set(enablePreNotification, forKey: "enablePreNotification")
         UserDefaults.standard.set(preNotificationMinutes, forKey: "preNotificationMinutes")
+        UserDefaults.standard.set(enableOpenAtMeetingTime, forKey: "enableOpenAtMeetingTime")
+        onNotificationPreferencesChanged?()
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {
