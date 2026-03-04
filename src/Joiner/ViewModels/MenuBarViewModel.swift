@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import AppKit
 
+@MainActor
 @Observable
 final class MenuBarViewModel {
     var appState: AppState

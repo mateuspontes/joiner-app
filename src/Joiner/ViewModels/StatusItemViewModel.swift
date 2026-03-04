@@ -9,6 +9,7 @@ final class StatusItemViewModel {
     var showIcon = true
 
     private var updateTimer: AnyCancellable?
+    private var dismissedEventsCancellable: AnyCancellable?
     private var joinedMeetingIds: Set<String> = []
     private weak var appState: AppState?
 
@@ -29,10 +30,16 @@ final class StatusItemViewModel {
             .sink { [weak self] _ in
                 self?.update()
             }
+
+        dismissedEventsCancellable = NotificationCenter.default.publisher(for: .dismissedEventsChanged)
+            .sink { [weak self] _ in
+                self?.update()
+            }
     }
 
     func stopMonitoring() {
         updateTimer?.cancel()
+        dismissedEventsCancellable?.cancel()
     }
 
     private func update() {
@@ -40,7 +47,9 @@ final class StatusItemViewModel {
 
         let now = Date()
         let dismissedIds = DismissedEventsStore.dismissedIds()
-        let events = appState.todayEvents.filter { !$0.isAllDay && !dismissedIds.contains($0.id) }
+        let events = appState.todayEvents
+            .filter { !$0.isAllDay && $0.meetingLink != nil && !dismissedIds.contains($0.id) }
+            .sorted { $0.startDate < $1.startDate }
 
         // Find next upcoming event
         let nextEvent = events.first { $0.startDate > now }

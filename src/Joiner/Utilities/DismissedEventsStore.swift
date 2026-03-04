@@ -16,10 +16,12 @@ enum DismissedEventsStore {
         var ids = dismissedIds()
         ids.insert(eventId)
         UserDefaults.standard.set(Array(ids), forKey: todayKey)
+        NotificationCenter.default.post(name: .dismissedEventsChanged, object: nil)
     }
 
     static func restoreAll() {
         UserDefaults.standard.removeObject(forKey: todayKey)
+        NotificationCenter.default.post(name: .dismissedEventsChanged, object: nil)
     }
 
     static var hasDismissed: Bool {
@@ -43,4 +45,8 @@ enum DismissedEventsStore {
             UserDefaults.standard.removeObject(forKey: key)
         }
     }
+}
+
+extension Notification.Name {
+    static let dismissedEventsChanged = Notification.Name("DismissedEventsChanged")
 }
