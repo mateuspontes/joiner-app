@@ -25,8 +25,8 @@ final class EventListViewModelTests: XCTestCase {
             location: nil,
             description: nil,
             calendarId: "cal1",
-            accountEmail: "test@test.com",
-            accountColor: "#34C759",
+            calendarTitle: "test@test.com",
+            calendarColor: "#34C759",
             meetingLink: nil,
             isAllDay: isAllDay
         )

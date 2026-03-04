@@ -7,6 +7,8 @@ final class MenuBarViewModel {
     var appState: AppState
     var sections: [EventSection] = []
     var nextUpEvent: CalendarEvent?
+    var hasDismissedEvents = false
+    var dismissedCount = 0
 
     private var refreshTimer: AnyCancellable?
 
@@ -29,7 +31,12 @@ final class MenuBarViewModel {
 
     func refresh() {
         let now = Date()
-        let events = appState.todayEvents.filter { !$0.isAllDay }
+        let dismissedIds = DismissedEventsStore.dismissedIds()
+        hasDismissedEvents = !dismissedIds.isEmpty
+        dismissedCount = dismissedIds.count
+
+        let events = appState.todayEvents
+            .filter { !$0.isAllDay && !dismissedIds.contains($0.id) }
 
         // Update next up
         let threshold = now.addingTimeInterval(Double(Constants.nextUpThresholdMinutes) * 60)
@@ -44,8 +51,8 @@ final class MenuBarViewModel {
             }
         }
 
-        // Build sections from remaining events
-        let remainingEvents = events.filter { $0.id != nextUpEvent?.id }
+        // Build sections from remaining events (only those with meeting links)
+        let remainingEvents = events.filter { $0.id != nextUpEvent?.id && $0.meetingLink != nil }
         sections = buildSections(from: remainingEvents)
     }
 
@@ -58,6 +65,16 @@ final class MenuBarViewModel {
         guard let link = event.meetingLink else { return }
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(link.url.absoluteString, forType: .string)
+    }
+
+    func dismissEvent(_ event: CalendarEvent) {
+        DismissedEventsStore.dismiss(event.id)
+        refresh()
+    }
+
+    func restoreAllDismissed() {
+        DismissedEventsStore.restoreAll()
+        refresh()
     }
 
     // MARK: - Conflict Grouping

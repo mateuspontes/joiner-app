@@ -4,12 +4,13 @@ struct EventRowView: View {
     let event: CalendarEvent
     let onJoin: () -> Void
     let onCopyLink: () -> Void
+    var onDismiss: (() -> Void)? = nil
 
     @State private var isHovering = false
 
     var body: some View {
         HStack(spacing: 10) {
-            AccountDot(colorHex: event.accountColor, size: 8)
+            AccountDot(colorHex: event.calendarColor, size: 8)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.timeRange)
@@ -21,7 +22,7 @@ struct EventRowView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
 
-                Text("from \(event.accountEmail)")
+                Text(event.calendarTitle)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
@@ -32,6 +33,16 @@ struct EventRowView: View {
             if let link = event.meetingLink {
                 HStack(spacing: 4) {
                     if isHovering {
+                        if let onDismiss {
+                            Button(action: onDismiss) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Dismiss event")
+                        }
+
                         Button(action: onCopyLink) {
                             Image(systemName: "doc.on.doc")
                                 .font(.system(size: 10))

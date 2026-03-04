@@ -6,11 +6,9 @@ import AppKit
 final class StatusItemViewModel {
     var countdownText: String?
     var isOverdue = false
-    var isBlinking = false
     var showIcon = true
 
     private var updateTimer: AnyCancellable?
-    private var blinkTimer: AnyCancellable?
     private var joinedMeetingIds: Set<String> = []
     private weak var appState: AppState?
 
@@ -35,14 +33,14 @@ final class StatusItemViewModel {
 
     func stopMonitoring() {
         updateTimer?.cancel()
-        blinkTimer?.cancel()
     }
 
     private func update() {
         guard let appState else { return }
 
         let now = Date()
-        let events = appState.todayEvents.filter { !$0.isAllDay }
+        let dismissedIds = DismissedEventsStore.dismissedIds()
+        let events = appState.todayEvents.filter { !$0.isAllDay && !dismissedIds.contains($0.id) }
 
         // Find next upcoming event
         let nextEvent = events.first { $0.startDate > now }
@@ -65,29 +63,7 @@ final class StatusItemViewModel {
                 && !joinedMeetingIds.contains(event.id)
         }
 
-        let wasOverdue = isOverdue
         isOverdue = overdueEvent != nil
-
-        if isOverdue && !wasOverdue {
-            startBlinking()
-        } else if !isOverdue && wasOverdue {
-            stopBlinking()
-        }
-    }
-
-    private func startBlinking() {
-        isBlinking = true
-        blinkTimer = Timer.publish(every: 0.7, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                self?.showIcon.toggle()
-            }
-    }
-
-    private func stopBlinking() {
-        isBlinking = false
-        blinkTimer?.cancel()
-        blinkTimer = nil
-        showIcon = true
+        showIcon = true // Always show the icon
     }
 }

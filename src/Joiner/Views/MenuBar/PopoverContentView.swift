@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PopoverContentView: View {
     @Bindable var viewModel: MenuBarViewModel
-    var authService: GoogleAuthService
     var onSyncRequest: () -> Void
     var onOpenPreferences: () -> Void
 
@@ -32,14 +31,36 @@ struct PopoverContentView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
 
+            // Dismissed events banner
+            if viewModel.hasDismissedEvents {
+                HStack(spacing: 4) {
+                    Image(systemName: "eye.slash")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                    Text("\(viewModel.dismissedCount) dismissed")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Restore all") {
+                        viewModel.restoreAllDismissed()
+                    }
+                    .font(.system(size: 11))
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.blue)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 4)
+            }
+
             // Event list or empty state
-            if authService.accounts.isEmpty {
-                noAccountsView
+            if viewModel.sections.isEmpty && viewModel.nextUpEvent == nil {
+                emptyStateView
             } else {
                 EventListView(
                     sections: viewModel.sections,
                     onJoin: { event in viewModel.joinMeeting(event) },
-                    onCopyLink: { event in viewModel.copyLink(event) }
+                    onCopyLink: { event in viewModel.copyLink(event) },
+                    onDismiss: { event in viewModel.dismissEvent(event) }
                 )
             }
 
@@ -56,20 +77,15 @@ struct PopoverContentView: View {
         }
     }
 
-    private var noAccountsView: some View {
+    private var emptyStateView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "person.crop.circle.badge.plus")
+            Image(systemName: "video.slash")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary)
-            Text("No accounts connected")
+            Text("No meetings with video links today")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            Text("Open Preferences to add a Google account")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
-            Button("Open Preferences", action: onOpenPreferences)
-                .controlSize(.large)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()

@@ -5,12 +5,7 @@ struct PreferencesView: View {
 
     var body: some View {
         TabView {
-            AccountsTabView(viewModel: viewModel)
-                .tabItem {
-                    Label("Accounts", systemImage: "person.2")
-                }
-
-            CalendarsTabView()
+            CalendarsTabView(viewModel: viewModel)
                 .tabItem {
                     Label("Calendars", systemImage: "calendar")
                 }

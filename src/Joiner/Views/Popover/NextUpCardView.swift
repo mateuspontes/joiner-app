@@ -14,7 +14,7 @@ struct NextUpCardView: View {
                 .foregroundStyle(.white.opacity(0.8))
 
             HStack(spacing: 8) {
-                AccountDot(colorHex: event.accountColor, size: 10)
+                AccountDot(colorHex: event.calendarColor, size: 10)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(event.title)
@@ -22,7 +22,7 @@ struct NextUpCardView: View {
                         .foregroundStyle(.white)
                         .lineLimit(2)
 
-                    Text("from \(event.accountEmail)")
+                    Text(event.calendarTitle)
                         .font(.caption2)
                         .foregroundStyle(.white.opacity(0.7))
                 }

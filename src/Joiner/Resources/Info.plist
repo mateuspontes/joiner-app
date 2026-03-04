@@ -26,16 +26,7 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Joiner. All rights reserved.</string>
-	<key>GIDClientID</key>
-	<string>773945224988-772b05fkqkmrlrjf4il0edgg2q116pvv.apps.googleusercontent.com</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.773945224988-772b05fkqkmrlrjf4il0edgg2q116pvv</string>
-			</array>
-		</dict>
-	</array>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Joiner needs access to your calendars to show upcoming meetings with video links.</string>
 </dict>
 </plist>

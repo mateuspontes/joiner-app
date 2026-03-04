@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import Combine
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
@@ -9,7 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // Core state
     let appState = AppState()
-    let authService = GoogleAuthService()
+    let eventKitService = EventKitService()
     private var syncService: CalendarSyncService!
     private var syncScheduler: SyncScheduler!
     private var menuBarViewModel: MenuBarViewModel!
@@ -20,13 +21,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        DismissedEventsStore.cleanupOldKeys()
+
         // Initialize services
-        syncService = CalendarSyncService(authService: authService)
+        syncService = CalendarSyncService(eventKitService: eventKitService)
         syncScheduler = SyncScheduler(syncService: syncService, appState: appState)
         menuBarViewModel = MenuBarViewModel(appState: appState)
-        preferencesViewModel = PreferencesViewModel(authService: authService)
-        preferencesViewModel.onAccountAdded = { [weak self] in
-            Task { await self?.syncScheduler.syncNow() }
+        preferencesViewModel = PreferencesViewModel(eventKitService: eventKitService)
+        preferencesViewModel.onCalendarVisibilityChanged = { [weak self] in
+            self?.syncScheduler.syncNow()
+        }
+
+        // React to system calendar changes
+        eventKitService.onCalendarChanged = { [weak self] in
+            self?.syncScheduler.syncNow()
         }
 
         // Configure notifications
@@ -39,10 +47,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Bind status item to state
         statusItemViewModel.bind(to: appState)
 
-        // Restore sessions and start sync
+        // Request EventKit access and start sync
         Task {
-            await authService.restoreSessions()
-            syncScheduler.start()
+            let granted = await eventKitService.requestAccess()
+            if granted {
+                syncScheduler.start()
+            }
         }
 
         // Observe state changes to update status item
@@ -51,6 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         syncScheduler?.stop()
+        eventKitService.stopMonitoring()
         statusItemViewModel.stopMonitoring()
         menuBarViewModel?.stopRefreshing()
     }
@@ -77,7 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )?.withSymbolConfiguration(config)
 
         if statusItemViewModel.isOverdue {
-            button.contentTintColor = statusItemViewModel.showIcon ? .red : .clear
+            button.contentTintColor = .red
         } else {
             button.contentTintColor = nil
         }
@@ -113,9 +124,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let contentView = PopoverContentView(
             viewModel: menuBarViewModel,
-            authService: authService,
             onSyncRequest: { [weak self] in
-                Task { await self?.syncScheduler.syncNow() }
+                self?.syncScheduler.syncNow()
             },
             onOpenPreferences: { [weak self] in
                 self?.openPreferences()

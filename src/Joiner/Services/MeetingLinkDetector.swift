@@ -2,8 +2,8 @@ import Foundation
 
 struct MeetingLinkDetector {
     private static let patterns: [(MeetingPlatform, String)] = [
-        (.googleMeet, #"https?://meet\.google\.com/[a-z\-]+"#),
-        (.zoom, #"https?://[\w.-]*zoom\.us/(?:j|my)/[\w./?=&%\-]+"#),
+        (.googleMeet, #"https?://meet\.google\.com/[a-z0-9\-]+"#),
+        (.zoom, #"https?://[\w.-]*zoom\.us/(?:j|my|s)/[\w./?=&%\-]+"#),
         (.teams, #"https?://teams\.microsoft\.com/l/meetup-join/[\w./?=&%\-]+"#),
         (.slackHuddle, #"https?://[\w.-]*slack\.com/huddle/[\w./?=&%\-]+"#),
     ]

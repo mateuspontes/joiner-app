@@ -17,8 +17,8 @@ final class CalendarEventTests: XCTestCase {
             location: nil,
             description: nil,
             calendarId: "cal1",
-            accountEmail: "user@test.com",
-            accountColor: "#34C759",
+            calendarTitle: "user@test.com",
+            calendarColor: "#34C759",
             meetingLink: nil,
             isAllDay: false
         )
@@ -36,8 +36,8 @@ final class CalendarEventTests: XCTestCase {
             location: nil,
             description: nil,
             calendarId: "cal1",
-            accountEmail: "user@test.com",
-            accountColor: "#FF3B30",
+            calendarTitle: "user@test.com",
+            calendarColor: "#FF3B30",
             meetingLink: nil,
             isAllDay: false
         )
@@ -55,8 +55,8 @@ final class CalendarEventTests: XCTestCase {
             location: nil,
             description: nil,
             calendarId: "cal1",
-            accountEmail: "user@test.com",
-            accountColor: "#007AFF",
+            calendarTitle: "user@test.com",
+            calendarColor: "#007AFF",
             meetingLink: nil,
             isAllDay: false
         )
@@ -79,8 +79,8 @@ final class CalendarEventTests: XCTestCase {
             location: nil,
             description: nil,
             calendarId: "cal1",
-            accountEmail: "user@test.com",
-            accountColor: "#34C759",
+            calendarTitle: "user@test.com",
+            calendarColor: "#34C759",
             meetingLink: nil,
             isAllDay: false
         )

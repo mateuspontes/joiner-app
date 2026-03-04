@@ -8,8 +8,8 @@ struct CalendarEvent: Identifiable, Hashable {
     let location: String?
     let description: String?
     let calendarId: String
-    let accountEmail: String
-    let accountColor: String
+    let calendarTitle: String
+    let calendarColor: String
     var meetingLink: MeetingLink?
     let isAllDay: Bool
 

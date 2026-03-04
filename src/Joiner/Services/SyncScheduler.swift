@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 @Observable
 final class SyncScheduler {
     private var timer: AnyCancellable?
@@ -13,14 +14,13 @@ final class SyncScheduler {
     }
 
     func start() {
-        // Initial sync
-        Task { await performSync() }
+        performSync()
 
-        // Periodic sync
-        timer = Timer.publish(every: Constants.syncIntervalSeconds, on: .main, in: .common)
+        // Periodic sync as fallback (EventKit change notifications are the primary trigger)
+        timer = Timer.publish(every: 5 * 60, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
-                Task { await self?.performSync() }
+                self?.performSync()
             }
     }
 
@@ -29,21 +29,21 @@ final class SyncScheduler {
         timer = nil
     }
 
-    func syncNow() async {
-        await performSync()
+    func syncNow() {
+        performSync()
     }
 
-    private func performSync() async {
+    private func performSync() {
         appState.isLoading = true
 
-        let events = await syncService.syncAllAccounts()
+        let events = syncService.syncEvents()
         appState.todayEvents = events
         appState.lastSyncDate = Date()
         appState.isLoading = false
 
         // Reschedule notifications
         NotificationService.shared.removeAllScheduled()
-        for event in events where event.startDate > Date() {
+        for event in events {
             NotificationService.shared.scheduleNotifications(for: event)
         }
     }

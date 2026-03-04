@@ -3,7 +3,6 @@ import Observation
 
 @Observable
 final class AppState {
-    var accounts: [CalendarAccount] = []
     var todayEvents: [CalendarEvent] = []
     var isLoading = false
     var lastSyncDate: Date?

@@ -4,6 +4,7 @@ struct ConflictGroupView: View {
     let group: ConflictGroup
     let onJoin: (CalendarEvent) -> Void
     let onCopyLink: (CalendarEvent) -> Void
+    let onDismiss: (CalendarEvent) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -22,7 +23,8 @@ struct ConflictGroupView: View {
                 EventRowView(
                     event: event,
                     onJoin: { onJoin(event) },
-                    onCopyLink: { onCopyLink(event) }
+                    onCopyLink: { onCopyLink(event) },
+                    onDismiss: { onDismiss(event) }
                 )
             }
         }

@@ -4,6 +4,7 @@ struct EventListView: View {
     let sections: [EventSection]
     let onJoin: (CalendarEvent) -> Void
     let onCopyLink: (CalendarEvent) -> Void
+    let onDismiss: (CalendarEvent) -> Void
 
     var body: some View {
         if sections.isEmpty {
@@ -23,7 +24,8 @@ struct EventListView: View {
                             ConflictGroupView(
                                 group: group,
                                 onJoin: onJoin,
-                                onCopyLink: onCopyLink
+                                onCopyLink: onCopyLink,
+                                onDismiss: onDismiss
                             )
                         }
                     }
