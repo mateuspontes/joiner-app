@@ -26,6 +26,8 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Joiner. All rights reserved.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Joiner needs access to your calendars to show upcoming meetings with video links.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Joiner needs access to your calendars to show upcoming meetings with video links.</string>
 </dict>

@@ -8,7 +8,7 @@ Joiner is a macOS menu bar application that reads your calendar events from the 
 
 ## Data We Access
 
-Joiner requests read-only access to your macOS Calendar (`NSCalendarsUsageDescription`) to:
+Joiner requests read-only access to your macOS Calendar (`NSCalendarsFullAccessUsageDescription`) to:
 
 - List your upcoming calendar events for the current day
 - Read event details (title, time, location, description, URL) to detect video conference links
@@ -34,7 +34,7 @@ When you click a meeting link, your default browser opens and connects directly 
 
 | Permission | Purpose |
 |------------|---------|
-| Calendar access (`NSCalendarsUsageDescription`) | Read calendar events from the macOS Calendar store to display your meetings |
+| Calendar access (`NSCalendarsFullAccessUsageDescription`) | Read calendar events from the macOS Calendar store to display your meetings |
 
 ## Revoking Access
 
