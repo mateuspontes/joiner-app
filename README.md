@@ -10,7 +10,7 @@ macOS menu bar app that shows your upcoming meetings with one-click join links f
   <img src="assets/joiner-app.png" alt="Joiner screenshot" />
 </p>
 
-⚠️ **Nota:** a versão funcional no momento é a local via `make run`. O DMG ainda não está disponível.
+⚠️ **Note:** the working version right now is the local build via `make run`. The DMG is not available yet.
 
 ## Features
 
