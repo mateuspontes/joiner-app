@@ -37,8 +37,21 @@ jobs:
           /usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_NAME"
           echo "ZIP_NAME=$ZIP_NAME" >> "$GITHUB_ENV"
 
+      - name: Package DMG (unsigned)
+        run: |
+          APP_PATH=".build/DerivedData/Build/Products/Release/Joiner.app"
+          DMG_NAME="Joiner-${GITHUB_REF_NAME}-macOS.dmg"
+          STAGING_DIR="$(mktemp -d)"
+          cp -R "$APP_PATH" "$STAGING_DIR/"
+          ln -s /Applications "$STAGING_DIR/Applications"
+          hdiutil create -volname "Joiner" -srcfolder "$STAGING_DIR" -ov -format UDZO "$DMG_NAME"
+          rm -rf "$STAGING_DIR"
+          echo "DMG_NAME=$DMG_NAME" >> "$GITHUB_ENV"
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.ZIP_NAME }}
+          files: |
+            ${{ env.ZIP_NAME }}
+            ${{ env.DMG_NAME }}
           generate_release_notes: true
