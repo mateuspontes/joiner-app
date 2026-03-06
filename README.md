@@ -25,7 +25,7 @@ macOS menu bar app that shows your upcoming meetings with one-click join links f
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
-- Xcode 16+ (for development)
+- Xcode 15.4+ (for development)
 - Calendar access permission (prompted on first launch)
 
 ---
