@@ -10,6 +10,8 @@ macOS menu bar app that shows your upcoming meetings with one-click join links f
   <img src="assets/joiner-app.png" alt="Joiner screenshot" />
 </p>
 
+⚠️ **Nota:** a versão funcional no momento é a local via `make run`. O DMG ainda não está disponível.
+
 ## Features
 
 - Reads from macOS Calendar (supports iCloud, Google, Exchange, CalDAV and any calendar synced to Calendar.app)
