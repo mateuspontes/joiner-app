@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PreferencesView: View {
-    @Bindable var viewModel: PreferencesViewModel
+    @ObservedObject var viewModel: PreferencesViewModel
 
     var body: some View {
         TabView {

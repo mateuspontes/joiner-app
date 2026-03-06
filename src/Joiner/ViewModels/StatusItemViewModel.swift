@@ -2,11 +2,11 @@ import Foundation
 import Combine
 import AppKit
 
-@Observable
-final class StatusItemViewModel {
-    var countdownText: String?
-    var isOverdue = false
-    var showIcon = true
+@MainActor
+final class StatusItemViewModel: ObservableObject {
+    @Published var countdownText: String?
+    @Published var isOverdue = false
+    @Published var showIcon = true
 
     private var updateTimer: AnyCancellable?
     private var dismissedEventsCancellable: AnyCancellable?

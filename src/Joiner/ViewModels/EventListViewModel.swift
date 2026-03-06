@@ -1,8 +1,8 @@
 import Foundation
+import Combine
 
-@Observable
-final class EventListViewModel {
-    var sections: [EventSection] = []
+final class EventListViewModel: ObservableObject {
+    @Published var sections: [EventSection] = []
 
     func update(with events: [CalendarEvent]) {
         let filtered = events

@@ -1,11 +1,11 @@
 import Foundation
+import Combine
 
-@Observable
-final class CalendarSyncService {
+final class CalendarSyncService: ObservableObject {
     private let eventKitService: EventKitService
 
-    var isSyncing = false
-    var lastError: String?
+    @Published var isSyncing = false
+    @Published var lastError: String?
 
     init(eventKitService: EventKitService) {
         self.eventKitService = eventKitService

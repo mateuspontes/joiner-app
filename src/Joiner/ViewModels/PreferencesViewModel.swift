@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import ServiceManagement
 
 /// A calendar entry with local visibility toggle.
@@ -11,22 +12,31 @@ struct CalendarInfo: Identifiable {
 }
 
 @MainActor
-@Observable
-final class PreferencesViewModel {
-    var eventKitService: EventKitService
-    var enableSound = true
-    var enableCountdown = true
-    var enablePreNotification = true
-    var preNotificationMinutes = 5
-    var enableOpenAtMeetingTime = true
-    var launchAtLogin = false
+final class PreferencesViewModel: ObservableObject {
+    private let eventKitService: EventKitService
+    private var cancellables = Set<AnyCancellable>()
 
-    var calendars: [CalendarInfo] = []
+    @Published var enableSound = true
+    @Published var enableCountdown = true
+    @Published var enablePreNotification = true
+    @Published var preNotificationMinutes = 5
+    @Published var enableOpenAtMeetingTime = true
+    @Published var launchAtLogin = false
+    @Published var hasCalendarAccess = false
+
+    @Published var calendars: [CalendarInfo] = []
     var onCalendarVisibilityChanged: (() -> Void)?
     var onNotificationPreferencesChanged: (() -> Void)?
 
     init(eventKitService: EventKitService) {
         self.eventKitService = eventKitService
+        hasCalendarAccess = eventKitService.hasAccess
+        eventKitService.$hasAccess
+            .receive(on: RunLoop.main)
+            .sink { [weak self] value in
+                self?.hasCalendarAccess = value
+            }
+            .store(in: &cancellables)
         loadPreferences()
         launchAtLogin = SMAppService.mainApp.status == .enabled
     }

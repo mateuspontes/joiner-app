@@ -3,18 +3,35 @@ import Combine
 import AppKit
 
 @MainActor
-@Observable
-final class MenuBarViewModel {
-    var appState: AppState
-    var sections: [EventSection] = []
-    var nextUpEvent: CalendarEvent?
-    var hasDismissedEvents = false
-    var dismissedCount = 0
+final class MenuBarViewModel: ObservableObject {
+    private let appState: AppState
+    private var stateCancellables = Set<AnyCancellable>()
+
+    @Published var sections: [EventSection] = []
+    @Published var nextUpEvent: CalendarEvent?
+    @Published var hasDismissedEvents = false
+    @Published var dismissedCount = 0
+    @Published var isLoading = false
 
     private var refreshTimer: AnyCancellable?
 
     init(appState: AppState) {
         self.appState = appState
+        isLoading = appState.isLoading
+
+        appState.$todayEvents
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.refresh()
+            }
+            .store(in: &stateCancellables)
+
+        appState.$isLoading
+            .receive(on: RunLoop.main)
+            .sink { [weak self] value in
+                self?.isLoading = value
+            }
+            .store(in: &stateCancellables)
     }
 
     func startRefreshing() {

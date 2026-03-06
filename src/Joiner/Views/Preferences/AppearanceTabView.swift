@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AppearanceTabView: View {
-    @Bindable var viewModel: PreferencesViewModel
+    @ObservedObject var viewModel: PreferencesViewModel
 
     var body: some View {
         Form {

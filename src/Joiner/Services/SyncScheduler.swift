@@ -2,8 +2,7 @@ import Foundation
 import Combine
 
 @MainActor
-@Observable
-final class SyncScheduler {
+final class SyncScheduler: ObservableObject {
     private var timer: AnyCancellable?
     private let syncService: CalendarSyncService
     private let appState: AppState

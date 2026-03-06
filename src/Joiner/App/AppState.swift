@@ -1,11 +1,11 @@
 import Foundation
-import Observation
+import Combine
 
-@Observable
-final class AppState {
-    var todayEvents: [CalendarEvent] = []
-    var isLoading = false
-    var lastSyncDate: Date?
+@MainActor
+final class AppState: ObservableObject {
+    @Published var todayEvents: [CalendarEvent] = []
+    @Published var isLoading = false
+    @Published var lastSyncDate: Date?
 
     var nextUpEvent: CalendarEvent? {
         let now = Date()

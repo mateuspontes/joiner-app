@@ -1,13 +1,13 @@
 import EventKit
 import Foundation
+import Combine
 
 @MainActor
-@Observable
-final class EventKitService {
+final class EventKitService: ObservableObject {
     private let eventStore = EKEventStore()
     private var changeObserver: NSObjectProtocol?
 
-    var hasAccess = false
+    @Published var hasAccess = false
     var onCalendarChanged: (() -> Void)?
 
     // MARK: - Access

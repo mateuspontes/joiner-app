@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PopoverContentView: View {
-    @Bindable var viewModel: MenuBarViewModel
+    @ObservedObject var viewModel: MenuBarViewModel
     var onSyncRequest: () -> Void
     var onOpenPreferences: () -> Void
 
@@ -23,7 +23,7 @@ struct PopoverContentView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
 
-                if viewModel.appState.isLoading {
+                if viewModel.isLoading {
                     ProgressView()
                         .controlSize(.mini)
                 }

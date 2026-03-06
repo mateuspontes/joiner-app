@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct CalendarsTabView: View {
-    @Bindable var viewModel: PreferencesViewModel
+    @ObservedObject var viewModel: PreferencesViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Calendar Visibility")
                 .font(.headline)
 
-            if !viewModel.eventKitService.hasAccess {
+            if !viewModel.hasCalendarAccess {
                 Spacer()
                 HStack {
                     Spacer()
@@ -103,4 +103,3 @@ struct CalendarsTabView: View {
         .padding(.vertical, 2)
     }
 }
-
