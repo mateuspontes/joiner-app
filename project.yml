@@ -1,7 +1,7 @@
 name: Joiner
 options:
   bundleIdPrefix: com.joinerapp
-  projectFormat: xcode15_3
+  projectFormat: xcode15
   deploymentTarget:
     macOS: "14.0"
   xcodeVersion: "15.4"

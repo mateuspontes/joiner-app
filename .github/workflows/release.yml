@@ -21,6 +21,7 @@ jobs:
       - name: Build app (unsigned)
         run: |
           xcodegen generate
+          perl -pi -e 's/objectVersion = 77;/objectVersion = 60;/' Joiner.xcodeproj/project.pbxproj
           xcodebuild -project Joiner.xcodeproj \
             -scheme Joiner \
             -configuration Release \
