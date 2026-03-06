@@ -6,7 +6,9 @@
 
 macOS menu bar app that shows your upcoming meetings with one-click join links for Google Meet, Zoom, Microsoft Teams, and Slack Huddle. It reads directly from the macOS Calendar app — no Google account or API keys required.
 
-![Joiner screenshot](assets/joiner-app.png)
+<p align="center">
+  <img src="assets/joiner-app.png" alt="Joiner screenshot" />
+</p>
 
 ## Features
 
@@ -63,3 +65,9 @@ On first launch the app will request **Calendar access** via the standard macOS 
 ## Contributing
 
 Issues and pull requests are welcome. For larger changes, open an issue first to discuss scope. Please run the test suite before submitting a PR.
+
+---
+
+## License
+
+MIT

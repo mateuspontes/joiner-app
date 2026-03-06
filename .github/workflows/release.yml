@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install xcodegen
+
+      - name: Build app (unsigned)
+        run: |
+          xcodegen generate
+          xcodebuild -project Joiner.xcodeproj \
+            -scheme Joiner \
+            -configuration Release \
+            -derivedDataPath .build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package app
+        run: |
+          APP_PATH=".build/DerivedData/Build/Products/Release/Joiner.app"
+          ZIP_NAME="Joiner-${GITHUB_REF_NAME}-macOS.zip"
+          /usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_NAME"
+          echo "ZIP_NAME=$ZIP_NAME" >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ZIP_NAME }}
+          generate_release_notes: true
